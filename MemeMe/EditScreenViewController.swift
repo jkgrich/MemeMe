@@ -9,12 +9,13 @@
 import UIKit
 
 class EditScreenViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITextFieldDelegate {
-
+    
     @IBOutlet weak var myImageVIew: UIImageView!
     @IBOutlet weak var topTextField: UITextField!
     @IBOutlet weak var bottomTextField: UITextField!
     @IBOutlet weak var toolbar: UIToolbar!
     @IBOutlet weak var navbar: UIToolbar!
+    @IBOutlet weak var cameraButton: UIBarButtonItem!
     
     // MARK: Text Attributes
     let memeTextAttributes: [String:Any] = [
@@ -24,14 +25,17 @@ class EditScreenViewController: UIViewController, UIImagePickerControllerDelegat
         NSAttributedStringKey.strokeWidth.rawValue:-2.5
     ]
     
+    func configureText(textField: UITextField, withText text: String) {
+        textField.delegate = self
+        textField.defaultTextAttributes = memeTextAttributes
+        textField.textAlignment = NSTextAlignment.center
+        textField.text = text
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        topTextField.delegate = self
-        bottomTextField.delegate = self
-        topTextField.defaultTextAttributes = memeTextAttributes
-        bottomTextField.defaultTextAttributes = memeTextAttributes
-        topTextField.textAlignment = NSTextAlignment.center
-        bottomTextField.textAlignment = NSTextAlignment.center
+        configureText(textField: topTextField, withText: "TOP")
+        configureText(textField: bottomTextField, withText: "BOTTOM")
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -45,8 +49,8 @@ class EditScreenViewController: UIViewController, UIImagePickerControllerDelegat
     }
     
     @objc func keyboardWillShow(_ notification: Notification) {
-        if bottomTextField.isTouchInside {
-            view.frame.origin.y = 0 - getKeyboardHeight(notification)
+        if bottomTextField.isFirstResponder {
+            view.frame.origin.y = -getKeyboardHeight(notification)
         }
     }
     
@@ -81,11 +85,10 @@ class EditScreenViewController: UIViewController, UIImagePickerControllerDelegat
     
     // Dismisses Keyboard
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        topTextField.resignFirstResponder()
+        self.view.endEditing(true)
         if topTextField.text == "" {
             topTextField.text = "TOP"
         }
-        bottomTextField.resignFirstResponder()
         if bottomTextField.text == "" {
             bottomTextField.text = "BOTTOM"
         }
@@ -114,7 +117,7 @@ class EditScreenViewController: UIViewController, UIImagePickerControllerDelegat
         imagePicker.delegate = self
         present(imagePicker, animated: true, completion: nil)
     }
-
+    
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
         let chosenImage = info[UIImagePickerControllerOriginalImage] as! UIImage
         myImageVIew.contentMode = .scaleAspectFit
@@ -133,11 +136,14 @@ class EditScreenViewController: UIViewController, UIImagePickerControllerDelegat
         var memedImage: UIImage
     }
     
+    func hideTopAndBottomBars(_ hide: Bool) {
+        toolbar.isHidden = hide
+    }
+    
     func generateMemedImage() -> UIImage {
         
         // TODO: Hide Toolbar and Navbar
-        toolbar.isHidden = true
-        navbar.isHidden = true
+        hideTopAndBottomBars(true)
         
         // Render view to an image
         UIGraphicsBeginImageContext(self.view.frame.size)
@@ -146,8 +152,7 @@ class EditScreenViewController: UIViewController, UIImagePickerControllerDelegat
         UIGraphicsEndImageContext()
         
         // TODO: Show Tool Bar and Navbar again
-        toolbar.isHidden = false
-        navbar.isHidden = false
+        hideTopAndBottomBars(false)
         
         return memedImage
     }
@@ -167,7 +172,7 @@ class EditScreenViewController: UIViewController, UIImagePickerControllerDelegat
         
         //calls the Save function to generate a meme object after the share activity view is dimissed
         controller.completionWithItemsHandler = { (activityType: UIActivityType?, completed: Bool, returnedItems: [Any]?, error: Error?) -> Void in
-            if completed == true {
+            if completed {
                 self.save()
             }
         }
@@ -179,5 +184,6 @@ class EditScreenViewController: UIViewController, UIImagePickerControllerDelegat
         topTextField.text = "TOP"
         bottomTextField.text = "BOTTOM"
     }
-
+    
 }
+

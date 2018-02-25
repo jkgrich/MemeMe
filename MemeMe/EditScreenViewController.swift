@@ -36,6 +36,7 @@ class EditScreenViewController: UIViewController, UIImagePickerControllerDelegat
         super.viewDidLoad()
         configureText(textField: topTextField, withText: "TOP")
         configureText(textField: bottomTextField, withText: "BOTTOM")
+        cameraButton.isEnabled = UIImagePickerController.isSourceTypeAvailable(.camera)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -98,18 +99,11 @@ class EditScreenViewController: UIViewController, UIImagePickerControllerDelegat
     @IBAction func shootPhoto(_ sender: UIBarButtonItem) {
         let camera = UIImagePickerController()
         camera.delegate = self
-        if UIImagePickerController.isSourceTypeAvailable(.camera) {
-            camera.allowsEditing = false
-            camera.sourceType = UIImagePickerControllerSourceType.camera
-            camera.cameraCaptureMode = .photo
-            camera.modalPresentationStyle = .fullScreen
-            present(camera, animated: true, completion: nil)
-        } else {
-            let alert = UIAlertController.init(title: "No Camera", message: "Sorry, this device does not have access to your camera", preferredStyle: .alert)
-            let okAction = UIAlertAction.init(title: "OK", style: .default, handler: nil)
-            alert.addAction(okAction)
-            present(alert, animated: true, completion: nil)
-        }
+        camera.allowsEditing = false
+        camera.sourceType = UIImagePickerControllerSourceType.camera
+        camera.cameraCaptureMode = .photo
+        camera.modalPresentationStyle = .fullScreen
+        present(camera, animated: true, completion: nil)
     }
     
     @IBAction func pickAnImage(_ sender: UIBarButtonItem) {
